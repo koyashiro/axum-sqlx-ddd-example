@@ -78,7 +78,7 @@ impl TryFrom<TodoDto> for Todo {
 #[cfg(test)]
 mod tests {
     use maplit::hashmap;
-    use uuid::uuid;
+    use uuid::Uuid;
 
     use crate::domain::error::ValidationError;
 
@@ -89,7 +89,7 @@ mod tests {
         let tests = vec![
             (
                 TodoDto {
-                    id: uuid!("e71f460e-abb6-46a5-a352-0fc24aa63143"),
+                    id: "e71f460e-abb6-46a5-a352-0fc24aa63143".parse().unwrap(),
                     title: "".to_owned(),
                 },
                 Err(hashmap! {
@@ -98,11 +98,14 @@ mod tests {
             ),
             (
                 TodoDto {
-                    id: uuid!("8629d01e-bc1c-4560-ae8d-b5f6c2a1bce8"),
+                    id: "8629d01e-bc1c-4560-ae8d-b5f6c2a1bce8".parse().unwrap(),
                     title: "todo title".to_owned(),
                 },
                 Ok(Todo {
-                    id: uuid!("8629d01e-bc1c-4560-ae8d-b5f6c2a1bce8").into(),
+                    id: "8629d01e-bc1c-4560-ae8d-b5f6c2a1bce8"
+                        .parse::<Uuid>()
+                        .unwrap()
+                        .into(),
                     title: "todo title".to_owned().try_into().unwrap(),
                 }),
             ),

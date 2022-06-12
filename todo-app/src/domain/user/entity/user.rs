@@ -78,7 +78,7 @@ impl TryFrom<UserDto> for User {
 #[cfg(test)]
 mod tests {
     use maplit::hashmap;
-    use uuid::uuid;
+    use uuid::Uuid;
 
     use crate::domain::error::ValidationError;
 
@@ -89,7 +89,7 @@ mod tests {
         let tests = vec![
             (
                 UserDto {
-                    id: uuid!("f422ff5e-f12b-43ae-80ff-a553909c8e8e"),
+                    id: "f422ff5e-f12b-43ae-80ff-a553909c8e8e".parse().unwrap(),
                     name: "".to_owned(),
                 },
                 Err(hashmap! {
@@ -98,11 +98,14 @@ mod tests {
             ),
             (
                 UserDto {
-                    id: uuid!("d91494c1-87ce-46bf-a816-abf2f5c09bc0"),
+                    id: "d91494c1-87ce-46bf-a816-abf2f5c09bc0".parse().unwrap(),
                     name: "user name".to_owned(),
                 },
                 Ok(User {
-                    id: uuid!("d91494c1-87ce-46bf-a816-abf2f5c09bc0").into(),
+                    id: "d91494c1-87ce-46bf-a816-abf2f5c09bc0"
+                        .parse::<Uuid>()
+                        .unwrap()
+                        .into(),
                     name: "user name".to_owned().try_into().unwrap(),
                 }),
             ),

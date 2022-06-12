@@ -9,12 +9,19 @@ use crate::domain::{
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UserCredentialDto {
-    user_id: Uuid,
-    email: String,
-    password_hash: String,
+    pub user_id: Uuid,
+    pub email: String,
+    pub password: String,
 }
 
-impl From<UserCredential> for UserCredentialDto {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UserCredentialHashedDto {
+    pub user_id: Uuid,
+    pub email: String,
+    pub password_hash: String,
+}
+
+impl From<UserCredential> for UserCredentialHashedDto {
     fn from(value: UserCredential) -> Self {
         Self {
             user_id: value.user_id.into(),
@@ -65,6 +72,33 @@ impl TryFrom<UserCredentialDto> for UserCredential {
     type Error = ValidationErrors;
 
     fn try_from(value: UserCredentialDto) -> Result<Self, Self::Error> {
+        let user_id = UserId::from(value.user_id);
+        let email = Email::try_from(value.email);
+        let password = Password::try_from(value.password);
+        match (email, password) {
+            (Ok(email), Ok(password)) => Ok(Self {
+                user_id,
+                email,
+                password_hash: password.to_hash(),
+            }),
+            (email, password) => {
+                let mut errors = Self::Error::new();
+                if let Err(email) = email {
+                    errors.insert(name_of!(email), email);
+                }
+                if let Err(password) = password {
+                    errors.insert(name_of!(password), password);
+                }
+                Err(errors)
+            }
+        }
+    }
+}
+
+impl TryFrom<UserCredentialHashedDto> for UserCredential {
+    type Error = ValidationErrors;
+
+    fn try_from(value: UserCredentialHashedDto) -> Result<Self, Self::Error> {
         let user_id = value.user_id.into();
         let email = value.email.try_into();
         let password_hash = value.password_hash.parse();
@@ -91,7 +125,6 @@ impl TryFrom<UserCredentialDto> for UserCredential {
 #[cfg(test)]
 mod tests {
     use maplit::hashmap;
-    use uuid::uuid;
 
     use crate::domain::error::ValidationError;
 
@@ -101,8 +134,8 @@ mod tests {
     fn todo_try_from_test() {
         let tests = vec![
             (
-                UserCredentialDto {
-                    user_id: uuid!("4742cac6-5c3b-451a-b902-e2ae80e9183f"),
+                UserCredentialHashedDto {
+                    user_id: "4742cac6-5c3b-451a-b902-e2ae80e9183f".parse().unwrap(),
                     email: "".to_owned(),
                     password_hash: "$argon2id$v=19$m=4096,t=3,p=1$UENQVUg4dXU0ZXN1bmFUNg$4vHNzxNMkhxwn0XQvG7a7w".to_owned(),
                 },
@@ -111,13 +144,13 @@ mod tests {
                 }),
             ),
             (
-                UserCredentialDto {
-                    user_id: uuid!("fd71d85c-c88b-4844-91b9-ddafb5bf34e4"),
+                UserCredentialHashedDto {
+                    user_id: "fd71d85c-c88b-4844-91b9-ddafb5bf34e4".parse().unwrap(),
                     email: "user@example.com".to_owned(),
                     password_hash: "$argon2id$v=19$m=4096,t=3,p=1$WVl6RWp6OVNxNnhNVlAydw$DUv40d2Qjq338qWivCcakw".to_owned(),
                 },
                 Ok(UserCredential {
-                    user_id: uuid!("fd71d85c-c88b-4844-91b9-ddafb5bf34e4").into(),
+                    user_id: "fd71d85c-c88b-4844-91b9-ddafb5bf34e4".parse::<Uuid>().unwrap().into(),
                     email: "user@example.com".to_owned().try_into().unwrap(),
                     password_hash: "$argon2id$v=19$m=4096,t=3,p=1$WVl6RWp6OVNxNnhNVlAydw$DUv40d2Qjq338qWivCcakw".parse().unwrap(),
                 }),

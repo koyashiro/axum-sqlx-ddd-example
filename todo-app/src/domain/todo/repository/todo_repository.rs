@@ -1,11 +1,15 @@
 use std::fmt::Debug;
 
+use async_trait::async_trait;
+use mockall::automock;
+
 use crate::domain::{
     todo::{entity::Todo, value_object::TodoId},
     user::value_object::UserId,
 };
 
-#[async_trait::async_trait]
+#[async_trait]
+#[automock]
 pub trait TodoRepository: Debug + Send + Sync {
     async fn find(&self, todo_id: &TodoId) -> Result<Option<Todo>, ()>;
 

@@ -1,14 +1,18 @@
 use std::fmt::Debug;
 
+use async_trait::async_trait;
+use mockall::automock;
+
 use crate::domain::user::{entity::User, value_object::UserId};
 
-#[async_trait::async_trait]
+#[async_trait]
+#[automock]
 pub trait UserRepository: Debug + Send + Sync {
-    async fn find(&self, user_id: &UserId) -> Result<Option<User>, ()>;
+    async fn find(&mut self, user_id: &UserId) -> Result<Option<User>, ()>;
 
-    async fn insert(&self, user: &User) -> Result<(), ()>;
+    async fn insert(&mut self, user: &User) -> Result<(), ()>;
 
-    async fn update(&self, user: &User) -> Result<(), ()>;
+    async fn update(&mut self, user: &User) -> Result<(), ()>;
 
-    async fn delete(&self, user_id: &UserId) -> Result<(), ()>;
+    async fn delete(&mut self, user_id: &UserId) -> Result<(), ()>;
 }

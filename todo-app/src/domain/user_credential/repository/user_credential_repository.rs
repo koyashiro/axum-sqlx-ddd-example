@@ -1,14 +1,23 @@
 use std::fmt::Debug;
 
-use crate::domain::{user::value_object::UserId, user_credential::entity::UserCredential};
+use async_trait::async_trait;
+use mockall::automock;
 
-#[async_trait::async_trait]
+use crate::domain::{
+    user::value_object::UserId,
+    user_credential::{entity::UserCredential, value_object::Email},
+};
+
+#[async_trait]
+#[automock]
 pub trait UserCredentialRepository: Debug + Send + Sync {
-    async fn find(&self, user_id: &UserId) -> Result<Option<UserCredential>, ()>;
+    async fn find(&mut self, user_id: &UserId) -> Result<Option<UserCredential>, ()>;
 
-    async fn insert(&self, user_credential: &UserCredential) -> Result<(), ()>;
+    async fn find_by_email(&mut self, email: &Email) -> Result<Option<UserCredential>, ()>;
 
-    async fn update(&self, user_credential: &UserCredential) -> Result<(), ()>;
+    async fn insert(&mut self, user_credential: &UserCredential) -> Result<(), ()>;
 
-    async fn delete(&self, user_id: &UserId) -> Result<(), ()>;
+    async fn update(&mut self, user_credential: &UserCredential) -> Result<(), ()>;
+
+    async fn delete(&mut self, user_id: &UserId) -> Result<(), ()>;
 }
