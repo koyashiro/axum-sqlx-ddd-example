@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use todo_app_domain::database::DB;
+use crate::database::DB;
 
 #[derive(Clone, Debug)]
 pub struct SignupUsecase {

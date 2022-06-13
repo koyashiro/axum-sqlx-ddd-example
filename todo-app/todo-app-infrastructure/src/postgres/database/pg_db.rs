@@ -3,12 +3,10 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use sqlx::PgPool as SqlxPgPool;
 
-use todo_app_domain::{
-    aggregate_root::{
-        todo::repository::TodoRepository, user::repository::UserRepository,
-        user_credential::repository::UserCredentialRepository,
-    },
-    database::{Repositories, Transaction, DB},
+use todo_app_application::database::{Repositories, Transaction, DB};
+use todo_app_domain::aggregate_root::{
+    todo::repository::TodoRepository, user::repository::UserRepository,
+    user_credential::repository::UserCredentialRepository,
 };
 
 use crate::postgres::{

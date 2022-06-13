@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use todo_app_domain::{aggregate_root::user::value_object::UserId, database::DB};
+use todo_app_domain::aggregate_root::user::value_object::UserId;
+
+use crate::database::DB;
 
 #[derive(Clone, Debug)]
 pub struct LoginUsecase {

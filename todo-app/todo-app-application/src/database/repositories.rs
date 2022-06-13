@@ -1,6 +1,6 @@
 use std::{fmt::Debug, sync::Arc};
 
-use crate::aggregate_root::{
+use todo_app_domain::aggregate_root::{
     todo::repository::TodoRepository, user::repository::UserRepository,
     user_credential::repository::UserCredentialRepository,
 };

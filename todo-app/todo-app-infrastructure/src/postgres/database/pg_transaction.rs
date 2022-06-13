@@ -4,12 +4,10 @@ use async_trait::async_trait;
 use sqlx::{Postgres, Transaction as SqlxTransaction};
 use tokio::sync::Mutex;
 
-use todo_app_domain::{
-    aggregate_root::{
-        todo::repository::TodoRepository, user::repository::UserRepository,
-        user_credential::repository::UserCredentialRepository,
-    },
-    database::{Repositories, Transaction},
+use todo_app_application::database::{Repositories, Transaction};
+use todo_app_domain::aggregate_root::{
+    todo::repository::TodoRepository, user::repository::UserRepository,
+    user_credential::repository::UserCredentialRepository,
 };
 
 use crate::postgres::repository::{PgUserCredentialRepository, PgUserRepository};
