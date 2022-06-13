@@ -9,9 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use todo_app_application::usecase::LoginUsecase;
 
-use crate::session::{SessionId, SessionStore};
-
-const SESSION_ID: &str = "_session_id";
+use crate::session::{SessionId, SessionStore, SESSION_ID_HEADER};
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
@@ -38,7 +36,10 @@ pub async fn login(
     session_store.save(&session_id, &user_id).await.unwrap();
 
     let mut headers = HeaderMap::new();
-    headers.insert(SESSION_ID, user_id.to_string().as_str().parse().unwrap());
+    headers.insert(
+        SESSION_ID_HEADER,
+        user_id.to_string().as_str().parse().unwrap(),
+    );
 
     (
         StatusCode::OK,
