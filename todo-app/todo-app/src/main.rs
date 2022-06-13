@@ -8,7 +8,7 @@ use todo_app_application::{
     session::SessionStore,
     usecase::{LoginUsecase, SignupUsecase},
 };
-use todo_app_infrastructure::{postgres::database::PgDB, redis::RedisSessionStore};
+use todo_app_infrastructure::{postgres::database::PgDB, redis::session::RedisSessionStore};
 use todo_app_presentation::handler::{login_handler::login, signup_handler::signup};
 
 #[tokio::main]
