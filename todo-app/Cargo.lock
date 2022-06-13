@@ -1577,12 +1577,10 @@ dependencies = [
 name = "todo-app-application"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "async-trait",
  "serde",
  "thiserror",
  "todo-app-domain",
- "uuid",
 ]
 
 [[package]]
@@ -1614,6 +1612,7 @@ dependencies = [
  "sqlx",
  "todo-app-application",
  "todo-app-domain",
+ "todo-app-presentation",
  "tokio",
 ]
 
@@ -1621,6 +1620,7 @@ dependencies = [
 name = "todo-app-presentation"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "axum",
  "serde",
@@ -1628,6 +1628,7 @@ dependencies = [
  "todo-app-application",
  "todo-app-domain",
  "tokio",
+ "uuid",
 ]
 
 [[package]]

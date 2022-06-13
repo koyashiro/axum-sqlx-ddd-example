@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 use redis::{AsyncCommands, Client};
 
-use todo_app_application::session::{SessionId, SessionStore};
 use todo_app_domain::aggregate_root::user::value_object::UserId;
+use todo_app_presentation::session::{SessionId, SessionStore};
 
 #[derive(Debug)]
 pub struct RedisSessionStore {

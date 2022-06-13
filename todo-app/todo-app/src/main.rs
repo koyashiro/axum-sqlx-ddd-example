@@ -4,12 +4,12 @@ use axum::{routing::post, Extension, Router};
 use redis::Client;
 use sqlx::postgres::PgPoolOptions;
 
-use todo_app_application::{
-    session::SessionStore,
-    usecase::{LoginUsecase, SignupUsecase},
-};
+use todo_app_application::usecase::{LoginUsecase, SignupUsecase};
 use todo_app_infrastructure::{postgres::database::PgDB, redis::session::RedisSessionStore};
-use todo_app_presentation::handler::{login_handler::login, signup_handler::signup};
+use todo_app_presentation::{
+    handler::{login_handler::login, signup_handler::signup},
+    session::SessionStore,
+};
 
 #[tokio::main]
 async fn main() {
