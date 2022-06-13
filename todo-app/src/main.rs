@@ -1,9 +1,17 @@
-use std::{env, net::SocketAddr};
+use std::{env, net::SocketAddr, sync::Arc};
 
 use axum::{routing::post, Extension, Router};
+use redis::Client;
 use sqlx::postgres::PgPoolOptions;
 
-use crate::presentation::handle::{login_handle::login, signup_handle::signup};
+use crate::{
+    application::{
+        session::SessionStore,
+        usecase::{LoginUsecase, SignupUsecase},
+    },
+    infrastructure::{postgres::database::PgDB, redis::RedisSessionStore},
+    presentation::handler::{login_handler::login, signup_handler::signup},
+};
 
 mod application;
 mod domain;
@@ -21,10 +29,20 @@ async fn main() {
         .await
         .unwrap();
 
+    let pg_db = Arc::new(PgDB::new(pool));
+    let signup_usecase = SignupUsecase::new(pg_db.clone());
+    let login_usecase = LoginUsecase::new(pg_db.clone());
+
+    let redis_client = Client::open("redis://localhost/").unwrap();
+    let session_store = Arc::new(RedisSessionStore::new(redis_client)) as Arc<dyn SessionStore>;
+
     let app = Router::new()
-        // .route("/login", post(login))
-        // .route("/signup", post(signup))
-        .layer(Extension(pool));
+        .route("/login", post(login))
+        .route("/signup", post(signup))
+        .layer(Extension(pg_db))
+        .layer(Extension(signup_usecase))
+        .layer(Extension(login_usecase))
+        .layer(Extension(session_store));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 

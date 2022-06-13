@@ -48,6 +48,13 @@ impl ValidationError {
             value: Value::String(value),
         }
     }
+
+    pub fn invalid(value: String) -> Self {
+        Self {
+            kind: ValidationErrorKind::Invalid,
+            value: Value::String(value),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -60,6 +67,7 @@ pub enum ValidationErrorKind {
     Email,
     Password,
     PasswordHash(argon2::password_hash::Error),
+    Invalid,
 }
 
 #[derive(Clone, Debug, PartialEq)]

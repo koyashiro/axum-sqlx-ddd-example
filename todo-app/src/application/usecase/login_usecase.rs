@@ -1,36 +1,32 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-use crate::application::dependency::Repositories;
+use crate::domain::{aggregate_root::user::value_object::UserId, database::DB};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct LoginUsecase {
-    repositories: Arc<Mutex<dyn Repositories>>,
+    db: Arc<dyn DB>,
 }
 
 impl LoginUsecase {
-    pub fn new(repositories: Arc<Mutex<dyn Repositories>>) -> Self {
-        Self { repositories }
+    pub fn new(db: Arc<dyn DB>) -> Self {
+        Self { db }
     }
 
-    pub async fn execute(&mut self, email: String, password: String) -> Result<(), ()> {
-        let email = email.try_into().unwrap();
+    pub async fn execute(&self, email: &str, password: &str) -> Result<UserId, ()> {
+        let email = email.parse().unwrap();
 
         let user_credential = self
-            .repositories
-            .lock()
-            .unwrap()
+            .db
             .user_credential_repository()
-            .lock()
-            .unwrap()
             .find_by_email(&email)
             .await
             .unwrap()
             .unwrap();
 
-        if !user_credential.password_hash().verify(&password) {
-            panic!("error");
+        if !user_credential.password_hash().verify(password) {
+            todo!()
         }
 
-        Ok(())
+        Ok(user_credential.user_id().clone())
     }
 }

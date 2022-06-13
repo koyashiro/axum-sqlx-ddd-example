@@ -1,2 +1,2 @@
-pub mod database;
-pub mod dependency;
+pub mod postgres;
+pub mod redis;
