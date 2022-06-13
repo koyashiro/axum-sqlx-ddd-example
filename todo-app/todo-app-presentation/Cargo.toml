@@ -5,11 +5,10 @@ edition = "2021"
 
 
 [dependencies]
-
 async-trait = "0.1.56"
 axum = { version = "0.5.7", features = ["headers"] }
 serde = { version = "1.0.137", features = ["derive"] }
 thiserror = "1.0.31"
-todo-app-application = { path = "../application" }
-todo-app-domain = { path = "../domain" }
+todo-app-application = { path = "../todo-app-application" }
+todo-app-domain = { path = "../todo-app-domain" }
 tokio = { version = "1.19.2", features = ["full"] }
