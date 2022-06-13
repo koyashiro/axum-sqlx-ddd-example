@@ -1595,26 +1595,76 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 name = "todo-app"
 version = "0.1.0"
 dependencies = [
+ "axum",
+ "redis",
+ "sqlx",
+ "todo-app-application",
+ "todo-app-domain",
+ "todo-app-infrastructure",
+ "todo-app-presentation",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "todo-app-application"
+version = "0.1.0"
+dependencies = [
  "anyhow",
+ "async-trait",
+ "serde",
+ "thiserror",
+ "todo-app-domain",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "todo-app-domain"
+version = "0.1.0"
+dependencies = [
  "argon2",
  "async-trait",
- "axum",
  "chrono",
  "getset",
  "maplit",
  "mockall",
  "nameof",
  "rand_core",
- "redis",
  "regex",
  "serde",
- "sqlx",
  "thiserror",
  "tokio",
- "tracing",
- "tracing-subscriber",
  "uuid",
  "validator",
+]
+
+[[package]]
+name = "todo-app-infrastructure"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "redis",
+ "serde",
+ "sqlx",
+ "todo-app-application",
+ "todo-app-domain",
+ "tokio",
+]
+
+[[package]]
+name = "todo-app-presentation"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "serde",
+ "thiserror",
+ "todo-app-application",
+ "todo-app-domain",
+ "tokio",
 ]
 
 [[package]]

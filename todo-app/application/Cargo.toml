@@ -1,0 +1,15 @@
+[package]
+name = "todo-app-application"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.57"
+async-trait = "0.1.56"
+serde = { version = "1.0.137", features = ["derive"] }
+thiserror = "1.0.31"
+todo-app-domain = { path = "../domain" }
+tokio = { version = "1.19.2", features = ["full"] }
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
+
+[dev-dependencies]
