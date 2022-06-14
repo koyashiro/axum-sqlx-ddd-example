@@ -1,10 +1,15 @@
 use async_trait::async_trait;
 
-use todo_app_domain::aggregate_root::user::{
-    entity::{User, UserRaw},
-    repository::UserRepository,
-    value_object::UserId,
+use nameof::name_of;
+use todo_app_domain::{
+    aggregate_root::user::{
+        entity::User,
+        repository::UserRepository,
+        value_object::{UserId, UserName},
+    },
+    error::{RepositoryError, ValidationErrors},
 };
+use uuid::Uuid;
 
 use crate::postgres::database::PgConnection;
 
@@ -21,9 +26,9 @@ impl PgUserRepository {
 
 #[async_trait]
 impl UserRepository for PgUserRepository {
-    async fn find(&self, user_id: &UserId) -> Result<Option<User>, ()> {
+    async fn find(&self, user_id: &UserId) -> Result<Option<User>, RepositoryError> {
         let query = sqlx::query_as!(
-            UserRaw,
+            UserRecord,
             "
             SELECT id, name
             FROM users
@@ -42,7 +47,7 @@ impl UserRepository for PgUserRepository {
         Ok(user)
     }
 
-    async fn insert(&self, user: &User) -> Result<(), ()> {
+    async fn insert(&self, user: &User) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             INSERT INTO users (id, name)
@@ -61,7 +66,7 @@ impl UserRepository for PgUserRepository {
         Ok(())
     }
 
-    async fn update(&self, user: &User) -> Result<(), ()> {
+    async fn update(&self, user: &User) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             UPDATE users
@@ -81,7 +86,7 @@ impl UserRepository for PgUserRepository {
         Ok(())
     }
 
-    async fn delete(&self, user_id: &UserId) -> Result<(), ()> {
+    async fn delete(&self, user_id: &UserId) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             DELETE FROM users
@@ -97,5 +102,25 @@ impl UserRepository for PgUserRepository {
         .unwrap();
 
         Ok(())
+    }
+}
+
+struct UserRecord {
+    id: Uuid,
+    name: String,
+}
+
+impl TryFrom<UserRecord> for User {
+    type Error = ValidationErrors;
+
+    fn try_from(value: UserRecord) -> Result<Self, Self::Error> {
+        let id = UserId::from(value.id);
+        let name = UserName::try_from(value.name);
+        match name {
+            Ok(name) => Ok(User::from((id, name))),
+            Err(name) => Err([(name_of!(name), name)]
+                .into_iter()
+                .collect::<Self::Error>()),
+        }
     }
 }

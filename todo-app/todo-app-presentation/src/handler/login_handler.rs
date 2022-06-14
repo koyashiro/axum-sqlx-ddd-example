@@ -1,13 +1,10 @@
 use std::sync::Arc;
 
-use axum::{
-    http::{HeaderMap, StatusCode},
-    response::IntoResponse,
-    Extension, Json,
-};
+use axum::{response::IntoResponse, Extension, Json};
 use serde::{Deserialize, Serialize};
 
 use todo_app_application::usecase::LoginUsecase;
+use tower_cookies::{Cookie, Cookies};
 
 use crate::session::{SessionId, SessionStore, SESSION_ID_HEADER};
 
@@ -23,6 +20,7 @@ pub struct LoginResponse {
 }
 
 pub async fn login(
+    cookies: Cookies,
     Json(request): Json<LoginRequest>,
     Extension(login_usecase): Extension<LoginUsecase>,
     Extension(session_store): Extension<Arc<dyn SessionStore>>,
@@ -35,15 +33,12 @@ pub async fn login(
     let session_id = SessionId::new();
     session_store.save(&session_id, &user_id).await.unwrap();
 
-    let mut headers = HeaderMap::new();
-    headers.insert(
+    let cookie = Cookie::build(
         SESSION_ID_HEADER,
-        user_id.to_string().as_str().parse().unwrap(),
-    );
-
-    (
-        StatusCode::OK,
-        headers,
-        Json(LoginResponse { message: "ok" }),
+        user_id.as_uuid().to_simple_ref().to_string(),
     )
+    .finish();
+    cookies.add(cookie);
+
+    Json(LoginResponse { message: "ok" })
 }

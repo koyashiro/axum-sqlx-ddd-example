@@ -1,13 +1,18 @@
 use async_trait::async_trait;
 
-use todo_app_domain::aggregate_root::{
-    user::value_object::UserId,
-    user_credential::{
-        entity::{UserCredential, UserCredentialHashedRaw},
-        repository::UserCredentialRepository,
-        value_object::Email,
+use nameof::name_of;
+use todo_app_domain::{
+    aggregate_root::{
+        user::value_object::UserId,
+        user_credential::{
+            entity::UserCredential,
+            repository::UserCredentialRepository,
+            value_object::{Email, PasswordHash},
+        },
     },
+    error::ValidationErrors,
 };
+use uuid::Uuid;
 
 use crate::postgres::database::PgConnection;
 
@@ -26,7 +31,7 @@ impl<'a> PgUserCredentialRepository {
 impl<'a> UserCredentialRepository for PgUserCredentialRepository {
     async fn find(&self, user_id: &UserId) -> Result<Option<UserCredential>, ()> {
         let query = sqlx::query_as!(
-            UserCredentialHashedRaw,
+            UserCredentialRecord,
             "
             SELECT user_id, email, password_hash
             FROM user_credentials
@@ -45,15 +50,15 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
         Ok(user)
     }
 
-    async fn find_by_email(&self, email: &Email) -> Result<Option<UserCredential>, ()> {
+    async fn find_by_email(&self, email: &str) -> Result<Option<UserCredential>, ()> {
         let query = sqlx::query_as!(
-            UserCredentialHashedRaw,
+            UserCredentialRecord,
             "
             SELECT user_id, email, password_hash
             FROM user_credentials
             WHERE email = $1
             ",
-            email.as_str()
+            email
         );
 
         let user = match &self.conn {
@@ -123,5 +128,37 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
         .unwrap();
 
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct UserCredentialRecord {
+    user_id: Uuid,
+    email: String,
+    password_hash: String,
+}
+
+impl TryFrom<UserCredentialRecord> for UserCredential {
+    type Error = ValidationErrors;
+
+    fn try_from(value: UserCredentialRecord) -> Result<Self, Self::Error> {
+        let user_id = UserId::from(value.user_id);
+        let email = Email::try_from(value.email);
+        let password_hash = PasswordHash::try_from(value.password_hash);
+        match (email, password_hash) {
+            (Ok(email), Ok(password_hash)) => {
+                Ok(UserCredential::from((user_id, email, password_hash)))
+            }
+            (email, password_hash) => {
+                let mut errors = Self::Error::new();
+                if let Err(email) = email {
+                    errors.insert(name_of!(email), email);
+                }
+                if let Err(password_hash) = password_hash {
+                    errors.insert(name_of!(password_hash), password_hash);
+                }
+                Err(errors)
+            }
+        }
     }
 }

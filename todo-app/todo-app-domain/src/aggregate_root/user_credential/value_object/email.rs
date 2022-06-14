@@ -1,7 +1,3 @@
-use std::str::FromStr;
-
-use validator::validate_email;
-
 use crate::error::ValidationError;
 
 const EMAIL_MAX_LENGTH: usize = 254;
@@ -13,13 +9,9 @@ impl Email {
     pub fn as_str(&self) -> &str {
         &self.0
     }
-}
 
-impl FromStr for Email {
-    type Err = ValidationError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        TryFrom::try_from(s.to_owned())
+    pub fn into_string(self) -> String {
+        self.0
     }
 }
 
@@ -28,15 +20,18 @@ impl TryFrom<String> for Email {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if value.is_empty() {
-            return Err(Self::Error::required(value));
+            return Err(Self::Error::Required);
         }
 
         if value.len() > EMAIL_MAX_LENGTH {
-            return Err(Self::Error::length(None, Some(EMAIL_MAX_LENGTH), value));
+            return Err(Self::Error::Length {
+                min: None,
+                max: Some(EMAIL_MAX_LENGTH),
+            });
         }
 
-        if !validate_email(&value) {
-            return Err(Self::Error::email(value));
+        if !validator::validate_email(&value) {
+            return Err(Self::Error::Email);
         }
 
         Ok(Self(value))
@@ -51,21 +46,23 @@ impl From<Email> for String {
 
 #[cfg(test)]
 mod tests {
+    use crate::macros::*;
+
     use super::*;
 
     #[test]
     fn email_try_from_test() {
         let tests = vec![
-            ("", Err(ValidationError::required("".to_owned()))),
-            ("invalid", Err(ValidationError::email("invalid".to_owned()))),
-            ("ok@example.com", Ok(Email("ok@example.com".to_owned()))),
+            ("", Err(ValidationError::Required)),
+            ("invalid", Err(ValidationError::Email)),
+            ("ok@example.com", Ok(email!("ok@example.com"))),
             (
                 "valid.email.address.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com",
-                Ok(Email("valid.email.address.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com".to_owned()))
+                Ok(email!("valid.email.address.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com"))
             ),
             (
                 "invalid.too.long.email.address.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com",
-                Err(ValidationError::length( None,  Some(EMAIL_MAX_LENGTH), "invalid.too.long.email.address.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@example.com".to_owned()))
+                Err(ValidationError::Length{ min: None,  max: Some(EMAIL_MAX_LENGTH)})
             ),
         ];
 

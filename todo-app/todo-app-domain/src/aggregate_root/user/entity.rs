@@ -1,3 +1,3 @@
 mod user;
 
-pub use user::{User, UserRaw};
+pub use user::User;

@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use argon2::{
     password_hash::{
         rand_core::OsRng, PasswordHash as Argon2PasswordHash, PasswordHasher, PasswordVerifier,
@@ -27,6 +25,10 @@ impl PasswordHash {
         &self.0
     }
 
+    pub fn into_string(self) -> String {
+        self.0
+    }
+
     pub fn verify(&self, password: &str) -> bool {
         let password_hash = Argon2PasswordHash::new(&self.0).unwrap();
         Argon2::default()
@@ -35,12 +37,15 @@ impl PasswordHash {
     }
 }
 
-impl FromStr for PasswordHash {
-    type Err = ValidationError;
+impl TryFrom<String> for PasswordHash {
+    type Error = ValidationError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Argon2PasswordHash::new(s).map_err(|e| ValidationError::password_hash(e, s.to_string()))?;
-        Ok(Self(s.to_owned()))
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let salt = SaltString::generate(&mut OsRng);
+        Argon2::default()
+            .hash_password(value.as_bytes(), &salt)
+            .map_err(|e| Self::Error::PasswordHash(e))?;
+        Ok(Self(value))
     }
 }
 
@@ -65,7 +70,7 @@ mod tests {
         ];
 
         for input in tests {
-            let result = PasswordHash::from_str(input);
+            let result = PasswordHash::try_from(input.to_owned());
             assert!(result.is_ok(), "input: {input}, result: {result:?}",);
         }
     }

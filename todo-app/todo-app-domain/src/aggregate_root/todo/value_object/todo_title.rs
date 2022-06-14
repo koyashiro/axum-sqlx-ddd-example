@@ -9,6 +9,10 @@ impl TodoTitle {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+
+    pub fn into_string(self) -> String {
+        self.0
+    }
 }
 
 impl TryFrom<String> for TodoTitle {
@@ -16,15 +20,14 @@ impl TryFrom<String> for TodoTitle {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if value.is_empty() {
-            return Err(Self::Error::required(value));
+            return Err(Self::Error::Required);
         }
 
         if value.len() > TODO_TITLE_MAX_LENGTH {
-            return Err(Self::Error::length(
-                None,
-                Some(TODO_TITLE_MAX_LENGTH),
-                value,
-            ));
+            return Err(Self::Error::Length {
+                min: None,
+                max: Some(TODO_TITLE_MAX_LENGTH),
+            });
         }
 
         Ok(Self(value))
@@ -39,29 +42,28 @@ impl From<TodoTitle> for String {
 
 #[cfg(test)]
 mod tests {
-    use crate::error::ValidationError;
+    use crate::{error::ValidationError, macros::*};
 
     use super::*;
 
     #[test]
     fn todo_title_try_from() {
         let tests = vec![
-            ("", Err(ValidationError::required("".to_owned()))),
+            ("", Err(ValidationError::Required)),
             (
                 "new todo title",
-                Ok(TodoTitle("new todo title".to_owned())),
+                Ok(todo_title!("new todo title")),
             ),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                Ok(TodoTitle("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_owned())),
+                Ok(todo_title!("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")),
             ),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                Err(ValidationError::length(
-                    None,
-                    Some(TODO_TITLE_MAX_LENGTH),
-                    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_owned(),
-                )),
+                Err(ValidationError::Length{
+                    min: None,
+                    max: Some(TODO_TITLE_MAX_LENGTH),
+                }),
             ),
         ];
 

@@ -1,3 +1,4 @@
+use ulid::Ulid;
 use uuid::Uuid;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -5,11 +6,15 @@ pub struct TodoId(Uuid);
 
 impl TodoId {
     pub fn new() -> Self {
-        Self(Uuid::new_v4())
+        Self(Ulid::new().into())
     }
 
     pub fn as_uuid(&self) -> &Uuid {
         &self.0
+    }
+
+    pub fn into_uuid(self) -> Uuid {
+        self.0
     }
 }
 

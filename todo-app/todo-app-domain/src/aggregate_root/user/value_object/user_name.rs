@@ -16,11 +16,14 @@ impl TryFrom<String> for UserName {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         if value.is_empty() {
-            return Err(Self::Error::required(value));
+            return Err(Self::Error::Required);
         }
 
         if value.len() > USER_NAME_MAX_LENGTH {
-            return Err(Self::Error::length(None, Some(USER_NAME_MAX_LENGTH), value));
+            return Err(Self::Error::Length {
+                min: None,
+                max: Some(USER_NAME_MAX_LENGTH),
+            });
         }
 
         Ok(Self(value))
@@ -42,18 +45,17 @@ mod tests {
     #[test]
     fn user_name_try_from() {
         let tests = vec![
-            ("", Err(ValidationError::required("".to_owned()))),
+            ("", Err(ValidationError::Required)),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 Ok(UserName("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_owned())),
             ),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                Err(ValidationError::length(
-                    None,
-                    Some(USER_NAME_MAX_LENGTH),
-                    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_owned(),
-                )),
+                Err(ValidationError::Length {
+                    min: None,
+                    max: Some(USER_NAME_MAX_LENGTH),
+                }),
             ),
         ];
 

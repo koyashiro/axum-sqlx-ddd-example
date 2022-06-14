@@ -12,7 +12,12 @@ impl SignupUsecase {
         Self { db }
     }
 
-    pub async fn execute(&self, name: String, email: String, password: String) -> Result<(), ()> {
+    pub async fn execute(
+        &self,
+        _name: String,
+        _email: String,
+        _password: String,
+    ) -> Result<(), ()> {
         Ok(())
     }
 }

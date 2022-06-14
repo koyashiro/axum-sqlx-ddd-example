@@ -15,12 +15,10 @@ impl LoginUsecase {
     }
 
     pub async fn execute(&self, email: &str, password: &str) -> Result<UserId, ()> {
-        let email = email.parse().unwrap();
-
         let user_credential = self
             .db
             .user_credential_repository()
-            .find_by_email(&email)
+            .find_by_email(email)
             .await
             .unwrap()
             .unwrap();
