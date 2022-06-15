@@ -43,9 +43,12 @@ impl From<Password> for String {
 
 #[cfg(test)]
 mod tests {
-    use crate::macros::*;
 
     use super::*;
+
+    fn password(value: &str) -> Password {
+        Password::try_from(value.to_owned()).unwrap()
+    }
 
     #[test]
     fn password_try_from_test() {
@@ -54,16 +57,16 @@ mod tests {
             ("passwor", Err(ValidationError::Required)),
             (
                 "abcdefghijklmnopqrstuvwxyz",
-                Ok(password!("abcdefghijklmnopqrstuvwxyz")),
+                Ok(password("abcdefghijklmnopqrstuvwxyz")),
             ),
             (
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                Ok(password!("ABCDEFGHIJKLMNOPQRSTUVWXYZ")),
+                Ok(password("ABCDEFGHIJKLMNOPQRSTUVWXYZ")),
             ),
-            ("0123456789", Ok(password!("0123456789"))),
+            ("0123456789", Ok(password("0123456789"))),
             (
                 "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~",
-                Ok(password!("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")),
+                Ok(password("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")),
             ),
         ];
 

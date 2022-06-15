@@ -44,7 +44,7 @@ impl TryFrom<String> for PasswordHash {
         let salt = SaltString::generate(&mut OsRng);
         Argon2::default()
             .hash_password(value.as_bytes(), &salt)
-            .map_err(|e| Self::Error::PasswordHash(e))?;
+            .map_err(Self::Error::PasswordHash)?;
         Ok(Self(value))
     }
 }

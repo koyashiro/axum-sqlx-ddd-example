@@ -42,9 +42,13 @@ impl From<TodoTitle> for String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{error::ValidationError, macros::*};
+    use crate::error::ValidationError;
 
     use super::*;
+
+    fn todo_title(value: &str) -> TodoTitle {
+        TodoTitle::try_from(value.to_owned()).unwrap()
+    }
 
     #[test]
     fn todo_title_try_from() {
@@ -52,11 +56,11 @@ mod tests {
             ("", Err(ValidationError::Required)),
             (
                 "new todo title",
-                Ok(todo_title!("new todo title")),
+                Ok(todo_title("new todo title")),
             ),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                Ok(todo_title!("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")),
+                Ok(todo_title("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")),
             ),
             (
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

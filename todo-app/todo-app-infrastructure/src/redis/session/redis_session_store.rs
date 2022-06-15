@@ -23,7 +23,7 @@ impl SessionStore for RedisSessionStore {
             .get_async_connection()
             .await
             .map_err(to_session_store_error)?;
-        let user_id_raw = conn.get::<&str, String>(&session_id.as_str()).await.ok();
+        let user_id_raw = conn.get::<&str, String>(session_id.as_str()).await.ok();
         let user_id = match user_id_raw {
             Some(user_id) => UserId::parse_str(&user_id).ok(),
             None => return Ok(None),
