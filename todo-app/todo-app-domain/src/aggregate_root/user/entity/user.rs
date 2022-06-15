@@ -18,7 +18,7 @@ impl User {
         }
     }
 
-    pub fn into_raw(self) -> (UserId, UserName) {
+    pub fn into_inner(self) -> (UserId, UserName) {
         (self.id, self.name)
     }
 }

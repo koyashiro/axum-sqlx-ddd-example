@@ -18,7 +18,7 @@ impl Todo {
         }
     }
 
-    pub fn into_raw(self) -> (TodoId, TodoTitle) {
+    pub fn into_inner(self) -> (TodoId, TodoTitle) {
         (self.id, self.title)
     }
 }
