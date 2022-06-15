@@ -1,4 +1,11 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum RepositoryError {}
+#[error("repository error")]
+pub struct RepositoryError(Box<dyn std::error::Error>);
+
+impl RepositoryError {
+    pub fn from(e: impl std::error::Error + 'static) -> Self {
+        Self(Box::new(e))
+    }
+}

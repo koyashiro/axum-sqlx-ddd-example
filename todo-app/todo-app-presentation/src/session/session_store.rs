@@ -1,17 +1,38 @@
-use std::fmt::Debug;
-
 use async_trait::async_trait;
-
+use chrono::{DateTime, Local};
+use getset::Getters;
+use serde::{Deserialize, Serialize};
 use todo_app_domain::aggregate_root::user::value_object::UserId;
-
-use crate::session::SessionId;
+use uuid::Uuid;
 
 use super::error::SessionStoreError;
 
+pub const SESSION_ID_HEADER: &str = "_todo_app_session_id";
+
+#[derive(Debug, Deserialize, Getters, Serialize)]
+pub struct Session {
+    #[getset(get = "pub")]
+    user_id: Uuid,
+    #[getset(get = "pub")]
+    logged_in_at: DateTime<Local>,
+}
+
+impl Session {
+    pub fn new(user_id: UserId) -> Self {
+        Self {
+            user_id: user_id.into_uuid(),
+            logged_in_at: Local::now(),
+        }
+    }
+
+    pub fn into_user_id(self) -> Uuid {
+        self.user_id
+    }
+}
+
 #[async_trait]
-pub trait SessionStore: Debug + Send + Sync {
-    async fn find(&self, session_id: &SessionId) -> Result<Option<UserId>, SessionStoreError>;
-    async fn save(&self, session_id: &SessionId, user_id: &UserId)
-        -> Result<(), SessionStoreError>;
-    async fn delete(&self, session_id: &SessionId) -> Result<(), SessionStoreError>;
+pub trait SessionStore: std::fmt::Debug + Send + Sync {
+    async fn find(&self, session_id: &str) -> Result<Option<UserId>, SessionStoreError>;
+    async fn save(&self, session_id: &str, session: &Session) -> Result<(), SessionStoreError>;
+    async fn delete(&self, session_id: &str) -> Result<(), SessionStoreError>;
 }

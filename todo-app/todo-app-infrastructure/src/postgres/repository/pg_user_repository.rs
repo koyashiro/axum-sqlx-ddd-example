@@ -41,10 +41,15 @@ impl UserRepository for PgUserRepository {
             PgConnection::Pool(p) => query.fetch_optional(p).await,
             PgConnection::Transaction(tx) => query.fetch_optional(&mut *tx.lock().await).await,
         }
-        .unwrap()
-        .map(|u| User::try_from(u).unwrap());
+        .map_err(RepositoryError::from)?;
 
-        Ok(user)
+        let user = match user {
+            Some(u) => User::try_from(u),
+            None => return Ok(None),
+        }
+        .map_err(RepositoryError::from)?;
+
+        Ok(Some(user))
     }
 
     async fn insert(&self, user: &User) -> Result<(), RepositoryError> {
@@ -61,7 +66,7 @@ impl UserRepository for PgUserRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
@@ -81,7 +86,7 @@ impl UserRepository for PgUserRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
@@ -99,7 +104,7 @@ impl UserRepository for PgUserRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
@@ -118,9 +123,11 @@ impl TryFrom<UserRecord> for User {
         let name = UserName::try_from(value.name);
         match name {
             Ok(name) => Ok(User::from((id, name))),
-            Err(name) => Err([(name_of!(name), name)]
-                .into_iter()
-                .collect::<Self::Error>()),
+            Err(name) => {
+                let mut errors = Self::Error::new();
+                errors.add(name_of!(name), name);
+                Err(errors)
+            }
         }
     }
 }

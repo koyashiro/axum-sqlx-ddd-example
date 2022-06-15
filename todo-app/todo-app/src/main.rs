@@ -22,9 +22,9 @@ async fn main() {
         .await
         .unwrap();
 
-    let pg_db = Arc::new(PgDB::new(pool));
-    let signup_usecase = SignupUsecase::new(pg_db.clone());
-    let login_usecase = LoginUsecase::new(pg_db.clone());
+    let db = Arc::new(PgDB::new(pool));
+    let signup_usecase = SignupUsecase::new(db.clone());
+    let login_usecase = LoginUsecase::new(db.clone());
 
     let redis_client = Client::open("redis://localhost/").unwrap();
     let session_store = Arc::new(RedisSessionStore::new(redis_client)) as Arc<dyn SessionStore>;
@@ -32,14 +32,14 @@ async fn main() {
     let app = Router::new()
         .route("/login", post(login))
         .route("/signup", post(signup))
-        .layer(Extension(pg_db))
+        .layer(Extension(db))
         .layer(Extension(signup_usecase))
         .layer(Extension(login_usecase))
         .layer(Extension(session_store));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
-    tracing::debug!("listening on {}", addr);
+    tracing::info!("listening on {}", addr);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

@@ -10,7 +10,7 @@ use todo_app_domain::{
             value_object::{Email, PasswordHash},
         },
     },
-    error::ValidationErrors,
+    error::{RepositoryError, ValidationErrors},
 };
 use uuid::Uuid;
 
@@ -29,7 +29,7 @@ impl<'a> PgUserCredentialRepository {
 
 #[async_trait]
 impl<'a> UserCredentialRepository for PgUserCredentialRepository {
-    async fn find(&self, user_id: &UserId) -> Result<Option<UserCredential>, ()> {
+    async fn find(&self, user_id: &UserId) -> Result<Option<UserCredential>, RepositoryError> {
         let query = sqlx::query_as!(
             UserCredentialRecord,
             "
@@ -40,17 +40,22 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
             user_id.as_uuid()
         );
 
-        let user = match &self.conn {
+        let user_credential = match &self.conn {
             PgConnection::Pool(p) => query.fetch_optional(p).await,
             PgConnection::Transaction(tx) => query.fetch_optional(&mut *tx.lock().await).await,
         }
-        .unwrap()
-        .map(|uc| UserCredential::try_from(uc).unwrap());
+        .map_err(RepositoryError::from)?;
 
-        Ok(user)
+        let user_credential = match user_credential {
+            Some(uc) => UserCredential::try_from(uc),
+            None => return Ok(None),
+        }
+        .map_err(RepositoryError::from)?;
+
+        Ok(Some(user_credential))
     }
 
-    async fn find_by_email(&self, email: &str) -> Result<Option<UserCredential>, ()> {
+    async fn find_by_email(&self, email: &str) -> Result<Option<UserCredential>, RepositoryError> {
         let query = sqlx::query_as!(
             UserCredentialRecord,
             "
@@ -65,13 +70,18 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
             PgConnection::Pool(p) => query.fetch_optional(p).await,
             PgConnection::Transaction(tx) => query.fetch_optional(&mut *tx.lock().await).await,
         }
-        .unwrap()
-        .map(|uc| UserCredential::try_from(uc).unwrap());
+        .map_err(RepositoryError::from)?;
 
-        Ok(user)
+        let user = match user {
+            Some(uc) => UserCredential::try_from(uc),
+            None => return Ok(None),
+        }
+        .map_err(RepositoryError::from)?;
+
+        Ok(Some(user))
     }
 
-    async fn insert(&self, user_credential: &UserCredential) -> Result<(), ()> {
+    async fn insert(&self, user_credential: &UserCredential) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             INSERT INTO user_credentials (user_id, email, password_hash)
@@ -86,12 +96,12 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
 
-    async fn update(&self, user_credential: &UserCredential) -> Result<(), ()> {
+    async fn update(&self, user_credential: &UserCredential) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             UPDATE user_credentials
@@ -107,12 +117,12 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
 
-    async fn delete(&self, user_id: &UserId) -> Result<(), ()> {
+    async fn delete(&self, user_id: &UserId) -> Result<(), RepositoryError> {
         let query = sqlx::query!(
             "
             DELETE FROM user_credentials
@@ -125,7 +135,7 @@ impl<'a> UserCredentialRepository for PgUserCredentialRepository {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
         }
-        .unwrap();
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
@@ -152,10 +162,10 @@ impl TryFrom<UserCredentialRecord> for UserCredential {
             (email, password_hash) => {
                 let mut errors = Self::Error::new();
                 if let Err(email) = email {
-                    errors.insert(name_of!(email), email);
+                    errors.add(name_of!(email), email);
                 }
                 if let Err(password_hash) = password_hash {
-                    errors.insert(name_of!(password_hash), password_hash);
+                    errors.add(name_of!(password_hash), password_hash);
                 }
                 Err(errors)
             }

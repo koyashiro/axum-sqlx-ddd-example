@@ -1,12 +1,17 @@
 use std::sync::Arc;
 
-use axum::{response::IntoResponse, Extension, Json};
+use axum::{Extension, Json};
+use cookie::{time::OffsetDateTime, SameSite};
 use serde::{Deserialize, Serialize};
-
+use time::Duration;
 use todo_app_application::usecase::LoginUsecase;
 use tower_cookies::{Cookie, Cookies};
+use uuid::Uuid;
 
-use crate::session::{SessionId, SessionStore, SESSION_ID_HEADER};
+use crate::{
+    handler::error::HandlerError,
+    session::{Session, SessionStore, SESSION_ID_HEADER},
+};
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
@@ -14,7 +19,7 @@ pub struct LoginRequest {
     password: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct LoginResponse {
     message: &'static str,
 }
@@ -24,21 +29,25 @@ pub async fn login(
     Json(request): Json<LoginRequest>,
     Extension(login_usecase): Extension<LoginUsecase>,
     Extension(session_store): Extension<Arc<dyn SessionStore>>,
-) -> impl IntoResponse {
+) -> Result<Json<LoginResponse>, HandlerError> {
     let user_id = login_usecase
         .execute(&request.email, &request.password)
-        .await
-        .unwrap();
+        .await?;
 
-    let session_id = SessionId::new();
-    session_store.save(&session_id, &user_id).await.unwrap();
+    let session_id = format!(
+        "{}{}",
+        Uuid::new_v4().to_simple_ref(),
+        Uuid::new_v4().to_simple_ref()
+    );
+    let session = Session::new(user_id);
+    session_store.save(&session_id, &session).await?;
 
-    let cookie = Cookie::build(
-        SESSION_ID_HEADER,
-        user_id.as_uuid().to_simple_ref().to_string(),
-    )
-    .finish();
+    let cookie = Cookie::build(SESSION_ID_HEADER, session_id)
+        .expires(OffsetDateTime::now_utc() + Duration::days(30))
+        .http_only(true)
+        .same_site(SameSite::Strict)
+        .finish();
     cookies.add(cookie);
 
-    Json(LoginResponse { message: "ok" })
+    Ok(Json(LoginResponse { message: "ok" }))
 }
