@@ -8,5 +8,3 @@ async-trait = "0.1.56"
 serde = { version = "1.0.137", features = ["derive"] }
 thiserror = "1.0.31"
 todo-app-domain = { path = "../todo-app-domain" }
-
-[dev-dependencies]
