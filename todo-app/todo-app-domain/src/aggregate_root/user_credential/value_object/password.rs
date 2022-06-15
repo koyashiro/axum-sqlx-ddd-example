@@ -2,7 +2,7 @@ use regex::Regex;
 
 use crate::{aggregate_root::user_credential::value_object::PasswordHash, error::ValidationError};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Password(String);
 
 impl Password {
@@ -22,6 +22,12 @@ impl Password {
 impl AsRef<str> for Password {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl std::fmt::Debug for Password {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Password").field(&"********").finish()
     }
 }
 

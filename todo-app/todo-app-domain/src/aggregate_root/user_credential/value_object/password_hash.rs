@@ -8,7 +8,7 @@ use argon2::{
 
 use crate::{aggregate_root::user_credential::value_object::Password, error::ValidationError};
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct PasswordHash(String);
 
 impl PasswordHash {
@@ -40,6 +40,12 @@ impl PasswordHash {
 impl AsRef<str> for PasswordHash {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl std::fmt::Debug for PasswordHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("PasswordHash").field(&"********").finish()
     }
 }
 
