@@ -18,7 +18,7 @@ impl User {
         }
     }
 
-    pub fn unwrap(self) -> (UserId, UserName) {
+    pub fn into_raw(self) -> (UserId, UserName) {
         (self.id, self.name)
     }
 }

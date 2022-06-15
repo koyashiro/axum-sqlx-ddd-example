@@ -28,7 +28,7 @@ impl UserCredential {
         self.password_hash = password.to_hash()
     }
 
-    pub fn unwrap(self) -> (UserId, Email, PasswordHash) {
+    pub fn into_raw(self) -> (UserId, Email, PasswordHash) {
         (self.user_id, self.email, self.password_hash)
     }
 }
