@@ -7,11 +7,17 @@ pub struct TodoTitle(String);
 
 impl TodoTitle {
     pub fn as_str(&self) -> &str {
-        &self.0
+        AsRef::as_ref(self)
     }
 
     pub fn into_string(self) -> String {
-        self.0
+        Into::into(self)
+    }
+}
+
+impl AsRef<str> for TodoTitle {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 

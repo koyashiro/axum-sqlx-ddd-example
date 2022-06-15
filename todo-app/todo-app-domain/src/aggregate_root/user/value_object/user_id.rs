@@ -14,15 +14,21 @@ impl UserId {
     }
 
     pub fn as_uuid(&self) -> &Uuid {
-        &self.0
+        AsRef::as_ref(self)
     }
 
     pub fn into_uuid(self) -> Uuid {
-        self.0
+        Into::into(self)
     }
 
     pub fn parse_str(s: &str) -> Result<UserId, ValidationError> {
         FromStr::from_str(s)
+    }
+}
+
+impl AsRef<Uuid> for UserId {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
     }
 }
 

@@ -7,6 +7,16 @@ pub struct UserName(String);
 
 impl UserName {
     pub fn as_str(&self) -> &str {
+        AsRef::as_ref(self)
+    }
+
+    pub fn into_string(self) -> String {
+        Into::into(self)
+    }
+}
+
+impl AsRef<str> for UserName {
+    fn as_ref(&self) -> &str {
         &self.0
     }
 }

@@ -10,11 +10,17 @@ impl TodoId {
     }
 
     pub fn as_uuid(&self) -> &Uuid {
-        &self.0
+        AsRef::as_ref(self)
     }
 
     pub fn into_uuid(self) -> Uuid {
-        self.0
+        Into::into(self)
+    }
+}
+
+impl AsRef<Uuid> for TodoId {
+    fn as_ref(&self) -> &Uuid {
+        &self.0
     }
 }
 

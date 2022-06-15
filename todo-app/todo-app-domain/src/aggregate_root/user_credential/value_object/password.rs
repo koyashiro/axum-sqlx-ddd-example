@@ -7,15 +7,21 @@ pub struct Password(String);
 
 impl Password {
     pub fn as_str(&self) -> &str {
-        &self.0
+        AsRef::as_ref(self)
     }
 
     pub fn into_string(self) -> String {
-        self.0
+        Into::into(self)
     }
 
     pub fn to_hash(&self) -> PasswordHash {
         PasswordHash::new(self)
+    }
+}
+
+impl AsRef<str> for Password {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 

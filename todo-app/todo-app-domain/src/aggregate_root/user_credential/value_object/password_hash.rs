@@ -22,11 +22,11 @@ impl PasswordHash {
     }
 
     pub fn as_str(&self) -> &str {
-        &self.0
+        AsRef::as_ref(self)
     }
 
     pub fn into_string(self) -> String {
-        self.0
+        Into::into(self)
     }
 
     pub fn verify(&self, password: &str) -> bool {
@@ -34,6 +34,12 @@ impl PasswordHash {
         Argon2::default()
             .verify_password(password.as_bytes(), &password_hash)
             .is_ok()
+    }
+}
+
+impl AsRef<str> for PasswordHash {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 
