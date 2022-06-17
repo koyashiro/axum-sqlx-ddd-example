@@ -14,4 +14,4 @@ todo-app-application = { path = "../todo-app-application" }
 todo-app-domain = { path = "../todo-app-domain" }
 todo-app-presentation = { path = "../todo-app-presentation" }
 tokio = { version = "1.19.2", features = ["full"] }
-uuid = "0.8.2"
+uuid = "1.1.2"
