@@ -17,4 +17,4 @@ todo-app-domain = { path = "../todo-app-domain" }
 tokio = { version = "1.19.2", features = ["full"] }
 tower-cookies = "0.7.0"
 ulid = { version = "0.5.0", features = ["uuid"] }
-uuid = { version = "0.8.2", features = ["serde", "v4"] }
+uuid = { version = "1.1.2", features = ["serde", "v4"] }
