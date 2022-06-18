@@ -12,7 +12,7 @@ rand_core = { version = "0.6.3", features = ["std"] }
 regex = "1.5.6"
 serde = { version = "1.0.137", features = ["derive"] }
 thiserror = "1.0.31"
-ulid = { version = "0.5.0", features = ["uuid"] }
+ulid = { version = "0.6.0", features = ["uuid"] }
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
 validator = { version = "0.15.0", features = ["derive"] }
 
