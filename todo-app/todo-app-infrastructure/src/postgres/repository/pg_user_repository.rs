@@ -7,7 +7,7 @@ use todo_app_domain::{
         repository::UserRepository,
         value_object::{UserId, UserName},
     },
-    error::{RepositoryError, ValidationErrors},
+    error::ValidationErrors,
 };
 use uuid::Uuid;
 
@@ -26,7 +26,7 @@ impl PgUserRepository {
 
 #[async_trait]
 impl UserRepository for PgUserRepository {
-    async fn find(&self, user_id: &UserId) -> Result<Option<User>, RepositoryError> {
+    async fn find(&self, user_id: &UserId) -> Result<Option<User>, anyhow::Error> {
         let query = sqlx::query_as!(
             UserRecord,
             "
@@ -40,19 +40,17 @@ impl UserRepository for PgUserRepository {
         let user = match &self.conn {
             PgConnection::Pool(p) => query.fetch_optional(p).await,
             PgConnection::Transaction(tx) => query.fetch_optional(&mut *tx.lock().await).await,
-        }
-        .map_err(RepositoryError::from)?;
+        }?;
 
         let user = match user {
             Some(u) => User::try_from(u),
             None => return Ok(None),
-        }
-        .map_err(RepositoryError::from)?;
+        }?;
 
         Ok(Some(user))
     }
 
-    async fn insert(&self, user: &User) -> Result<(), RepositoryError> {
+    async fn insert(&self, user: &User) -> Result<(), anyhow::Error> {
         let query = sqlx::query!(
             "
             INSERT INTO users (id, name)
@@ -65,13 +63,12 @@ impl UserRepository for PgUserRepository {
         match &self.conn {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
-        }
-        .map_err(RepositoryError::from)?;
+        }?;
 
         Ok(())
     }
 
-    async fn update(&self, user: &User) -> Result<(), RepositoryError> {
+    async fn update(&self, user: &User) -> Result<(), anyhow::Error> {
         let query = sqlx::query!(
             "
             UPDATE users
@@ -85,13 +82,12 @@ impl UserRepository for PgUserRepository {
         match &self.conn {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
-        }
-        .map_err(RepositoryError::from)?;
+        }?;
 
         Ok(())
     }
 
-    async fn delete(&self, user_id: &UserId) -> Result<(), RepositoryError> {
+    async fn delete(&self, user_id: &UserId) -> Result<(), anyhow::Error> {
         let query = sqlx::query!(
             "
             DELETE FROM users
@@ -103,8 +99,7 @@ impl UserRepository for PgUserRepository {
         match &self.conn {
             PgConnection::Pool(p) => query.execute(p).await,
             PgConnection::Transaction(tx) => query.execute(&mut *tx.lock().await).await,
-        }
-        .map_err(RepositoryError::from)?;
+        }?;
 
         Ok(())
     }
@@ -116,7 +111,7 @@ struct UserRecord {
 }
 
 impl TryFrom<UserRecord> for User {
-    type Error = ValidationErrors;
+    type Error = anyhow::Error;
 
     fn try_from(value: UserRecord) -> Result<Self, Self::Error> {
         let id = UserId::from(value.id);
@@ -124,9 +119,10 @@ impl TryFrom<UserRecord> for User {
         match name {
             Ok(name) => Ok(User::from((id, name))),
             Err(name) => {
-                let mut errors = Self::Error::new();
-                errors.add(name_of!(name), name);
-                Err(errors)
+                let error = ValidationErrors::builder()
+                    .error(name_of!(name), name)
+                    .build();
+                Err(error.into())
             }
         }
     }

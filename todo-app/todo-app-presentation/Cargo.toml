@@ -4,17 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.57"
 async-trait = "0.1.56"
 axum = { version = "0.5.7", features = ["headers"] }
 chrono = { version = "0.4.19", features = ["serde"] }
 cookie = "0.16.0"
 getset = "0.1.2"
+nameof = "1.2.2"
 serde = { version = "1.0.137", features = ["derive"] }
 thiserror = "1.0.31"
-time = { version = "0.3.9" }
+time = "0.3.9"
 todo-app-application = { path = "../todo-app-application" }
 todo-app-domain = { path = "../todo-app-domain" }
 tokio = { version = "1.19.2", features = ["full"] }
 tower-cookies = "0.7.0"
-ulid = { version = "0.5.0", features = ["uuid"] }
+tracing = "0.1.35"
 uuid = { version = "1.1.2", features = ["serde", "v4"] }

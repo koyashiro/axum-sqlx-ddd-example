@@ -1,9 +1,13 @@
 use thiserror::Error;
-use todo_app_domain::error::RepositoryError;
+use todo_app_domain::error::ValidationErrors;
 
 #[derive(Debug, Error)]
-#[error("usecase error")]
 pub enum UsecaseError {
-    Failed(&'static str),
-    Repository(#[from] RepositoryError),
+    #[error("UsecaseError::Expected: {message}")]
+    Expected {
+        message: &'static str,
+        errors: ValidationErrors,
+    },
+    #[error("UsecaseError::Unexpected: {0:?}")]
+    Unexpected(#[from] anyhow::Error),
 }

@@ -19,12 +19,18 @@ impl User {
     }
 
     pub fn into_inner(self) -> (UserId, UserName) {
-        (self.id, self.name)
+        Into::into(self)
     }
 }
 
 impl From<(UserId, UserName)> for User {
     fn from((id, name): (UserId, UserName)) -> Self {
         Self { id, name }
+    }
+}
+
+impl From<User> for (UserId, UserName) {
+    fn from(user: User) -> Self {
+        (user.id, user.name)
     }
 }

@@ -20,14 +20,21 @@ impl LoginUsecase {
             .user_credential_repository()
             .find_by_email(email)
             .await?
-            .ok_or(UsecaseError::Failed("invalid email or password"))?;
+            .ok_or(login_failed_error())?;
 
         if !user_credential.password_hash().verify(password) {
-            return Err(UsecaseError::Failed("invalid email or password"));
+            return Err(login_failed_error());
         }
 
         let (user_id, _, _) = user_credential.into_inner();
 
         Ok(user_id)
+    }
+}
+
+fn login_failed_error() -> UsecaseError {
+    UsecaseError::Expected {
+        message: "invalid email or password",
+        errors: Default::default(),
     }
 }

@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use ulid::Ulid;
 use uuid::Uuid;
 
 use crate::error::ValidationError;
@@ -10,7 +9,7 @@ pub struct UserId(Uuid);
 
 impl UserId {
     pub fn new() -> Self {
-        Self(Ulid::new().into())
+        Self(Uuid::new_v4())
     }
 
     pub fn as_uuid(&self) -> &Uuid {

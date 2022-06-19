@@ -34,11 +34,7 @@ pub async fn login(
         .execute(&request.email, &request.password)
         .await?;
 
-    let session_id = format!(
-        "{}{}",
-        Uuid::new_v4().to_simple_ref(),
-        Uuid::new_v4().to_simple_ref()
-    );
+    let session_id = format!("{}{}", Uuid::new_v4().simple(), Uuid::new_v4().simple());
     let session = Session::new(user_id);
     session_store.save(&session_id, &session).await?;
 

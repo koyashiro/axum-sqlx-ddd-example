@@ -5,8 +5,6 @@ use serde::{Deserialize, Serialize};
 use todo_app_domain::aggregate_root::user::value_object::UserId;
 use uuid::Uuid;
 
-use super::error::SessionStoreError;
-
 pub const SESSION_ID_HEADER: &str = "_todo_app_session_id";
 
 #[derive(Debug, Deserialize, Getters, Serialize)]
@@ -32,7 +30,7 @@ impl Session {
 
 #[async_trait]
 pub trait SessionStore: std::fmt::Debug + Send + Sync {
-    async fn find(&self, session_id: &str) -> Result<Option<UserId>, SessionStoreError>;
-    async fn save(&self, session_id: &str, session: &Session) -> Result<(), SessionStoreError>;
-    async fn delete(&self, session_id: &str) -> Result<(), SessionStoreError>;
+    async fn find(&self, session_id: &str) -> Result<Option<UserId>, anyhow::Error>;
+    async fn save(&self, session_id: &str, session: &Session) -> Result<(), anyhow::Error>;
+    async fn delete(&self, session_id: &str) -> Result<(), anyhow::Error>;
 }
