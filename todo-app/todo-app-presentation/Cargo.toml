@@ -11,7 +11,7 @@ chrono = { version = "0.4.19", features = ["serde"] }
 cookie = "0.16.0"
 getset = "0.1.2"
 nameof = "1.2.2"
-serde = { version = "1.0.137", features = ["derive"] }
+serde = { version = "1.0.138", features = ["derive"] }
 thiserror = "1.0.31"
 time = "0.3.11"
 todo-app-application = { path = "../todo-app-application" }
