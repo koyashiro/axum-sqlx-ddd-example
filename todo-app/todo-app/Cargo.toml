@@ -13,4 +13,4 @@ todo-app-infrastructure = { path = "../todo-app-infrastructure" }
 todo-app-presentation = { path = "../todo-app-presentation" }
 tokio = { version = "1.19.2", features = ["full"] }
 tracing = "0.1.35"
-tracing-subscriber = "0.3.12"
+tracing-subscriber = "0.3.14"
