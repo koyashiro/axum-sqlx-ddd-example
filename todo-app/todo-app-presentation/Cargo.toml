@@ -16,7 +16,7 @@ thiserror = "1.0.31"
 time = "0.3.11"
 todo-app-application = { path = "../todo-app-application" }
 todo-app-domain = { path = "../todo-app-domain" }
-tokio = { version = "1.19.2", features = ["full"] }
+tokio = { version = "1.20.0", features = ["full"] }
 tower-cookies = "0.7.0"
 tracing = "0.1.35"
 uuid = { version = "1.1.2", features = ["serde", "v4"] }
